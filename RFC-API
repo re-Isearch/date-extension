@@ -1,0 +1,19 @@
+
+The following code is available:
+
+1) Geo encoding/decoding.
+   The formats:
+      - geohash
+      - Maidenhead Locator
+   are currently supported
+
+2) Determination of sunrise and sundown times.
+   This is critical for Lunar and Lunarsolar calendars
+   such as the Hebrew and Islamic (hijri).
+   
+
+3) Hebrew and Islamic calendar conversions.
+
+   MOTE: There is not a single calendar as there are the following issues:
+
+   - In the Hebew Ca

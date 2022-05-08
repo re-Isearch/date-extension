@@ -1,0 +1,472 @@
+Calendaring Extension 
+
+ISO-8601:2019 dates with additional information
+
+Revision: 3.2
+Date: April 2022
+
+Abstract
+
+   This document defines a proposed extension to the date and time
+   format defined in ISO-8601:2019 to support multiple calendar formats.  
+   It has been designed to also be consistent with efforts from
+   the IETF timestamp format [RFC3339] proposed extensions within
+   SEDATE (Serialising Extended Data About Times and Events).
+
+Status of This Memo
+
+   This is a draft request for comment. It is intended to be a basis for
+   discussion among a number of relevant interested parties including the
+   IETF RFC3339 and EDTF communities (the later provided the basis for
+   the 2019 revision of the ISO date and time standard)
+
+Introduction
+
+   Dates and times are used in a very diverse set of applications. Time
+   can be represented in a descriptive text format. The International standard
+   [ISO8601] describes a large number of date/time formats based around
+   the Gregorian calendar (including the proleptic Gregorian calendar) and with
+   a 24-hour timekeeping system.
+
+   The standard was first published in 1988, with updates in 1991, 2000, 2004
+   and 2019 and a number of other standards are built-upon it, or a reduced
+   profile thereof. It forms, for example, the basis of [RFC3339], an IETF
+   standard, used to descripe timestamtps. Many in the library community sought
+   to extend ISO-8601:2004 and the product of that work was [EDTF]. Subtantial
+   elements of EDTF, it in turn, flowed into ISO-8601:2019.
+   
+   What did not make it into EDTF and ISO-8601:2019 was a means to extend
+   expressions to contain additional relevant information such as calendar
+   data to support other date/time models. This is particularly demanded by
+   cultural heritage digitalization efforts. 
+
+   This was also pressing issue for developers in Internet applications that
+   need to take things like DST transitions into account.
+
+   Without agreeing upon a standardized way to encode these each implementor
+   in up to including the needed contextual information in an ad-hoc non
+   interoperable way.
+
+   This document defines an extension syntax for timestamps as specified
+   in EDTF/ISO-8601 as well as RFC3339 timestamps that has the following
+   properties:
+
+   *  The extension suffix is completely optional, making existing
+      expressions compatible with this format.
+
+   *  The format provides generalized way to attach any additional
+      information to the expression.
+
+   *  The format provides a generalized way to specifiy an alternative
+      semantics (e.g. calendar) for the date/time expression.
+
+   * The format (level-2) provides a means to express date/time expressions
+     in another calendar.
+
+Extensions to the Extended Date and Time format
+
+   This section discusses desirable qualities of formats for the
+   timestamp extension prefix and suffix and defines such a format
+   that extends ISO-8601/EDTF/RFC3339 for use in a host of applications.
+
+
+Informative
+
+   The format should allow implementations to specify additional
+   important information in addition to the date/time expression.
+
+   This is especially important to convey that the expression is either
+   1) really a canonical form (e.g. ISO calendar) represenation of a date
+   actually specified in another calendear (for example Hebrew) or that
+   what appears to be an ISO calendar expression is really a date from
+   an alternative calendar expressed using the syntax of an ISO-8601, EDTF
+   or IETF3339 date/time (e.g. 5782-02-02 which 2 Iyar 5782, which is
+   3 May 2022 after sunset).
+
+   Prefix expressions denote attributes to encoding, resp. semantics for
+   the year, month, day and time expressions. Lacking a prefix expression
+   the default semantics are those for year, month, day as specified in
+   by the calendar underlying the ISO-8601 standard (a calendar based in
+   great part on the Gregorian calendar with some mintor tweaks) as well
+   as time specified in minutes, seconds etc. (as common in Western societies
+   since the 17th Century). Note that not all encodings have the concept of
+   second (e.g. Hebrew uses as smallest measure the Helek unit which is 
+   based upon the Babylonian barlycorn which represents 1° of celestial
+   rotation or 1/1080th of an hour or 3 1/3 seconds).  In this context is
+   it also remarked that not all calendars start their hour at "mightnight".
+   Some (such as Hebrew Talmudic) start at sunrise and divide the day into
+   12 hours of "day" and 12 hours of "night" just as our conventional model
+   of hours starting at midnight derives from a measurable "noon" as the
+   highest point of the Sun during daylight hours: Midnight = noon + 12 hours. 
+
+   For these additional information is required and that is specified in the
+   suffix.
+
+   Fundamentally we need an abstract language-independent representation. Following
+   an analysis of a large number of calendars to derive a common interlingus we
+   found the following attributes as central:
+
+   * The calendar mapping: XXX <--> ISO 8601 date (Gregorian Calendar)
+   * Start of calendar day:
+     - Midnight
+     - Sunset + n minutes (where n typically ranges from 0 to 72 minutes)
+     - Sunrise + n minutes 
+     - Convention when time and/or location is not specified
+   * Start of the clock (0-24 hours):
+     - Midnight
+     - Sunrise - n minutes
+     - Convention when location is not specified
+   * Type of calendar
+     - Solar
+     - Lunar
+     - Luna Solar
+   * Timezone:
+     - Offset from UTC of location.
+     - Default if not specified:
+        o Default based upon location (lookup)
+        o Default if no location is specified
+
+   Because a number of these attributes for a number of models depends upon
+   location to determine sunset, sunrise and timezone offset we typically need
+   to have a means to express the location.
+
+   * Default location (if neither location nor timezone is given)
+     - location of the reader (localtime of the system processing expression)
+     - default location for a calendar (for example Jerusalem)
+     - UTC
+
+
+   With location we also can determine the hemisphere and determine also the
+   seasons (resolving one of the issues in EDTF on semantics for Winter and
+   Sunmer).
+
+   Suffix expression denote additional information as well as use.
+
+   Both prefix and suffix expressions are built using
+	[key1=value1, key=value2, ...].
+
+   We allow as many tags as required, each with a key and value separated by
+   an equals sign.  The value can be a hyphen delimited list of multiple values.
+
+   In case a key is repeated or conflicted, implementations MUST give
+   precedence to whichever value is positioned first.
+
+Location / Geo position
+
+   Instead of focusing on a single geospatial encoding of position it is
+   suggested we support at least:
+   - Well defined human readable location name 
+   - Geographic coordinate system (GCS): latitude, longitude [ISO19111]
+   - geocode hash (Z-order) [GEOHASH]
+   - Maidenhead Locator System (MLS or QTH-Locator) [MLS]
+
+   Both Geohash and MLS are in the public domain and unecumbered by patents.
+
+   Other versions of the geocode hash may be considered:
+   - Open Street Map's Short-link (basically the Z-order geocode hash but encoded in
+     base64 instead of the 32 base used)
+   - 64-bit geohash 
+   - geocode hash using a Hilbert space filling instead of of a Z-order curve
+
+   Since empircal tests have shown the 5 character geocode hash to be sufficient
+   we don't see their need.
+
+   Since GPS lat/lng are floating points, geocode are lower case and MLS starts
+   with upper case letters any implementation should be able to properly determine
+   the encoding without additional specification.
+
+   At this time Open Location Code (OLC) a geocode system from Google also known as
+  "plus codes" is considered inappropriate. They could, however, be easily added since
+   their "plus" (+) syntax makes them easy to identify and distinguish from geocode hash
+   and MLS..
+
+Timezone
+   Since we are optionally specifiying location and timezone there is the case where a
+   location is specified but not the timezone. For this a "database" is consulted.
+
+   For the proof of concept of this standard we are using the Timezone Boundary Builder
+   [TBB] which itself builds upon OpenStreetMap data.
+ 
+   The drawbacks is that a database may not acurately reflect the timezone of the
+   location at the date specified (for example, in 2018 North Korea returned to UTC+09:00
+   to realign its clocks with South Korea after having moved in 2015 to UTC+08:30
+   which was used 1 April 1908 to 31 December 1911)
+
+   Prior to 1878 we did not even have a unified system of timezones and the earliest
+   synchronization of times was in 1852 (railroads).
+
+   The concept even of a unified worldwide system of timezone was first proposed by the
+   Italian mathematician Quirico Filopanti in his book Miranda!, published in 1858.
+
+   It is thus unclear to fully specifiy the date/time of the assassination of Abraham
+   Lincoln. We know its location (511 10th St NW, Washington, DC 20004, USA Latitude:
+   38° 53' 48.012'' N , Longitude: 77° 1' 32.4084'' W) and we know the reported date
+   and time (April 14, 1865; 10:15 pm) but we don't have a well defined time resolution.
+   It was nearly 20 years later on 18 November 1883 that America’s railroads began using
+   a standard time system involving four time zones, Eastern, Central, Mountain and Pacific. 
+   The time reported for Lincoln's murder was a mechanical clock and the current estimate
+   of the time zone offset to GMT at that date is -4:56:02 (currently -5)
+
+   It is here that we come to fully appreciate the revision of ISO-8601 in 2019 to now
+   include the concepts of accuracy and precision. 
+
+
+Namespaced
+
+   Since the suffix can include all sorts of additional information,
+   different standards bodies/organizations need a way to identify which
+   part adheres to their standards.  For this, all information needs to
+   be namespaced.  Each key is therefore divided into two hyphen-
+   separated sections: the namespace and the key.  For example, the
+   calendar as defined by the Unicode consortium could be included as
+   "u-ca=<value>".
+
+
+Levels
+
+   Two levels are proposed:
+   - Level 1: All dates are encoded using ISO-8601 dates (e.g. roughly the
+     Gregorian calendar)
+   - Level 2: Allows dates to be encoded in other calenders.
+
+
+Why encode using other calendars?
+
+   While one can translate given addition information (a large part of the
+   raison d'être of the extensions) one can encode other date/time events
+   from calendars into an ISO-8601 expression there are many use cases where
+   it is preferable to express a date/time already in another calendar.
+
+   In [ISO8601] and [EDTF] we currently have both placekeepers and expressions
+   of uncertainty. How can we, for example, express a date as being some day
+   in the Hebew month of Nissan or the Islamic month of Shaban?  Or what about
+   an expression of date being in the Hebrew year 5727?  That year started at
+   Sundown on the 13 Sep 1966 and ended 3 Oct 1967.  Even more complicated is
+   the observation that the first month of the New Year is the Month of Tishrei
+   which is not the first month but the 7th! The first month is Nisan (Aviv).
+   "Nisan" and other Akkadian names for the equivalent lunar months in the
+   Babylonian lunisolar calendar came to be applied during the Babylonian
+   captivity, in which the month of Aviv's name was Araḫ Nisānu, the "month
+   of beginning". Rosh Hashana, the Hebrew New Year, is usually (but not always)
+   determined by the new moon closest to the autumnal equinox.  It is roughly
+   the equivalent of the Chinese Moon Festival on the 15th day of the 8th month
+   of the Chinese lunisolar calendar-- the Chinese calendar defines the lunar
+   month containing the winter solstice as the eleventh month, meaning that
+   Chinese New Year usually falls on the second new moon after the winter solstice,
+   so roughly 9 months after the winter solstice.
+
+Level 2 calendar attribute reserved names and keys for encoding (left side) 
+
+   We propose to reserve the following keywords:
+     "mighnight" (0), "sunrise" ("r"), "sunset" ("s")
+
+   We propose to reserve the following keys
+
+   x-d:=  when the calendar day starts (example "2+18" to denote 18 min after
+          sunset)  
+   x-c:=  when 0 starts (example 0 for "midnight" or 2 for "sunrise")
+
+  This modifiers are needed since there are a number of variants of calendars
+  and instead of being forced to catalgue these seperately we can use these
+  to modify their behavior.
+
+  For example the Talmudic Hebrew calendar starts counting hours at sunrise or daybreak
+  while the civil Hebrew calendar starts counting hours at midnight.
+
+  Daybreak is normally held to be when the sun is 16.1° below the horizon, or a fixed 72
+  minutes or 90 minutes before sunrise . This is followed by 12 hours "day" and 12 hours
+  "night".
+
+
+  Simiarly the Hebrew calendar has also a number of different interpretations of when the
+  next day starts. The Talmud states there is an uncertainty as to whether the day ends
+  at sunset or nightfall, so the time in between has a status of doubt.
+  These days two positions dominate on when nightfall occurs:
+  - 13½-18 minutes after sundown (or, equivalently, the sun falls 3–4° below the horizon).
+  - exactly 72 minutes after sundown (or, equivalently, the sun falls 6–16° below the horizon).
+
+  In this light one reading could be:
+     x-d=s+18
+     x-c=r-72
+
+Syntax Extensions 
+
+   The following rules extend the ABNF syntax defined in order to allow
+   the inclusion of an optional data.
+
+   location      = the syntax for the encoding hash (defined elswwhere)
+                   1*alphanum / "/" / "." / "+" / "-"
+
+   namespace      = 1*alphanum
+   namespace-key  = 1*alphanum
+   key            = namespace ["-" namespace-key]
+
+   suffix-value   = 1*alphanum
+   suffix-values  = suffix-value *("-" suffix-value)
+   suffix-tag     = "[" key "=" suffix-values "]"
+   suffix         = [location] *suffix-tag
+
+   prefix-value   = 1*alphanum
+   prefix-values  = prefix-value *("-" prefix-value)
+   perfix-tag     = "[" key "=" prefix-values "]"
+   prefix         = *prefix-tag
+
+   date-time-ext-level1  = date-time suffix
+   date-time-ext-level2  = prefix date-time suffix
+
+
+Prefix vs Suffix
+
+   Prefix means "encoded as" (information about what the expression
+   encodes) while suffix is to provide information to better understand
+   the expression.
+
+   Lacking a prefix the default is the ISO-8601 calendar encoding.
+
+Examples
+
+   Here are some examples of the extended date/time format.
+
+   1996-12-19T16:39:57-08:00
+
+   This represents 39 minutes and 57 seconds after the 16th hour of
+   December 19th, 1996 with an offset of -08:00 from UTC.  Note that
+   this is equivalent to 1996-12-20T00:39:57Z in UTC.
+   
+   Since the location was not specified it is assumed somewhere in
+   a region with a time offset of UTC-8
+
+   This covers the region of Alaska (AKDT: laska Daylight Time),
+   Clipperton Island  (CIST: Clipperton Island Standard Time) and
+   the West of the Rockies in North America (PST: Pacific Standard Time).
+   Covering all or parts of five states in the US and two provinces or
+   territories in Canada it is a rather large area and provides
+   insufficient informaton to determine, if needed, the sunrise and
+   sundown times. The later can differ by serveral hours (a significant
+   order of magnitude in determining date change in calendars using some
+   variant of sunset as the start of a new date).
+
+   1996-12-19T16:39:57-08:00[Los Angeles,CA.,USA]
+
+   This represents the exact same instant as the previous example but
+   additionally specifies the human name of the location associated
+   with it ("Los Angeles, CA., USA"). Among other things this tell us
+   that the time-zone is PST.
+
+   Since we now have the date point "Los Angeles" we can determine that
+   sundown took place at roughly 16:47 so for calendars like the Hebrew
+   of Islamic (Hijri) calendars, a new date had not yet started.
+
+   While "Los Angeles, CA., USA" might be convienent and human readable it is
+   less suitable for computers as their use demands a database that can
+   convert place names to latitude/longitude coordinates to calculate, when
+   needed, sunrise and sundown times.  This can also be quite problematic as 
+   it is not uncommon for country borders and names to change, places to
+   change their names (e.g.  Léopoldville became Kinshasa, Lenningrad became
+   St. Petersburg) or even move (for example Kiruna, Sweden) or also have
+   different transliterations of their names (e.g. Kiev, Ukraine, USSSR
+   became Kiev, Ukraine and then Kyiv, Ukraine). Town, state and country may
+   also not uniquely specify a location. In the US we have, for example, in
+   New York State two Woodbury towns (one in Nassau County and the other in
+   Orange County) 134 km apart.
+   
+   Best practice, it is suggested, is a a more "precise" expression such as
+   lat/long 34.0522° N, 118.2437° W or one of the hashes that encode the
+   location data (example "9q5ctr186")
+
+   1996-12-19T16:39:57-08:00[9q5ctr186]
+   Notice in the above we have sufficient information and don't need a database
+   to resolve either the time expression nor the location to determine the times
+   for sunrise and sunset.
+
+
+   1996-12-19T16:39:57-08:00[9q5ctr186][u-ca=hebrew]
+
+   This represents the exact same instant but it informs calendar-aware
+   implementations that they should project it to the Hebrew calendar--
+   the civil calendar in Israel and the liturgical calendar of the
+   Jewish faith worldwide. In the traditional Hebrew calendar, days start
+   at sunset. Using the specified location we can calculate the times for
+   sundown, whence the start of the new day.
+
+   1996-12-19T16:39:57-08:00[u-ca=hebrew]
+
+   Lacking a location to keep synchronized with other calendars and with local
+   clock time, we treat days and months as beginning at midnight.  This is the
+   standard convention for printed calendars. For calendars like the Hebrew amd
+   Islamic where the day starts after some set amount after sundown (sundown+x)
+   it is taken that the day starts at the previous sundown + x.
+
+
+   [u-ca=hebrew]5782-02-02
+
+   This encodes 2 Iyar 5782 in the Hebew calendar which is 3 May 2022 after
+   sunset or as in the previous example 4 May 2022.
+
+   [u-ca=hebrew]5782-02-02{u-ca=hebrew]
+ 
+   Since the encoding and useage are the same there is no difference between it
+   and the previous expression.
+
+
+   1996-12-19T16:39:57-08:00[9q5ctr186][u-ca=hebrew][x-d=s+18][x-c=r-72]
+   This informs calendar-aware implementations that they should project it to a
+   Hebrew calendar with a time/date attribute defined.
+
+   1996-12-19T16:39:57-08:00[x-foo=bar][x-baz=bat]
+
+   This sentence utilizes the private use namespace to declare two
+   additional pieces of information in the suffix that can be
+   interpreted by any compatible implementations and ignored otherwise.
+
+References 
+
+
+   [EDTF]    US Library of Congress et al, "Extended Date/Time Format
+             (EDTF) Specification", Feb 2019 
+             <https://www.loc.gov/standards/datetime/>
+
+   [ISO8601]  International Organization for Standardization, "Data
+              elements and interchange formats", ISO 8601:2019, Feb 2019
+              <https://www.iso.org/standard/70907.html>
+
+   [ISO19111] International Organization for Standardization, 
+              "Geographic information — Referencing by coordinates", 
+              ISO 19111:2019, Jan 2019
+              <https://www.iso.org/standard/74039.html>
+
+
+   [RFC3339]  Klyne, G. and C. Newman, "Date and Time on the Internet:
+              Timestamps", RFC 3339, IETF RFC 3339,
+              DOI 10.17487/RFC3339, July 2002,
+              <https://www.rfc-editor.org/info/rfc3339>.
+
+   [ITU-R-TF] "", ITU-R TF.460-6.
+
+   [IERS]     "International Earth Rotation Service Bulletins",
+              <https://www.iers.org/IERS/EN/Publications/Bulletins/
+              bulletins.html>.
+
+   [TBB]      Timezone Boundary Builder
+              <https://github.com/evansiroky/timezone-boundary-builder>
+
+   [OSM]      Openstreet Map time zones
+              <https://wiki.openstreetmap.org/wiki/Key:timezone>
+
+   [GEOHASH]  Geohash (Z-order curve) 
+              <https://en.wikipedia.org/wiki/Geohash>
+              <http://geohash.org/>
+
+   [MLS]      Maidenhead Locator System (QTH Locator)
+              <https://en.wikipedia.org/wiki/Maidenhead_Locator_System>
+
+Author's Address
+
+Edward C. Zimmermann
+edz@nonmonotonic.net
+http://www.nonmonotonic.net
+
+
+This work has been supported by a grant from the EU StandICT to which we are
+strongly indebted. 
+
