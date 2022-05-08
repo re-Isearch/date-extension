@@ -2,7 +2,7 @@ Calendaring Extension
 
 ISO-8601:2019 dates with additional information
 
-Revision: 4.0
+Revision: 4.1
 Date: April 2022
 
 Abstract
@@ -155,7 +155,6 @@ Location / Geo position
 
    Instead of focusing on a single geospatial encoding of position it is
    suggested we support at least:
-   - Well defined human readable location name 
    - Geographic coordinate system (GCS): latitude, longitude [ISO19111]
    - geocode hash (Z-order) [GEOHASH]
    - Maidenhead Locator System (MLS or QTH-Locator) [MLS]
@@ -179,6 +178,9 @@ Location / Geo position
   "plus codes" is considered inappropriate. They could, however, be easily added since
    their "plus" (+) syntax makes them easy to identify and distinguish from geocode hash
    and MLS..
+
+   In addtion to the geocode we want to allow for an optional:
+   - Well defined human readable location name 
 
 Timezone
    Since we are optionally specifiying location and timezone there is the case where a
@@ -209,6 +211,9 @@ Timezone
 
    It is here that we come to fully appreciate the revision of ISO-8601 in 2019 to now
    include the concepts of accuracy and precision. 
+
+   For the sake of being human readable we follow the suggestion of the IETF and allow
+   the inclusion, for informational purposes, of the IANA registered timezone name.
 
 
 Namespaced
@@ -295,7 +300,9 @@ Syntax Extensions
    the inclusion of an optional data.
 
    location      = the syntax for the encoding hash (defined elswwhere)
-                   1*alphanum / "/" / "." / "+" / "-"
+                   1*alphanum / "/" / "." / "+" / "-" / ":"
+
+   timezone      = 1*alphanum / "/" 
 
    namespace      = 1*alphanum
    namespace-key  = 1*alphanum
@@ -304,7 +311,7 @@ Syntax Extensions
    suffix-value   = 1*alphanum
    suffix-values  = suffix-value *("-" suffix-value)
    suffix-tag     = "[" key "=" suffix-values "]"
-   suffix         = [location] *suffix-tag
+   suffix         = [location] [timezone] *suffix-tag
 
    prefix-value   = 1*alphanum
    prefix-values  = prefix-value *("-" prefix-value)
@@ -314,6 +321,8 @@ Syntax Extensions
    date-time-ext-level1  = date-time suffix
    date-time-ext-level2  = prefix date-time suffix
 
+The semantics for data follow ":" are "iformational", e.g. optional
+human readable well defined name of the location
 
 Prefix vs Suffix
 
@@ -346,7 +355,16 @@ Examples
    order of magnitude in determining date change in calendars using some
    variant of sunset as the start of a new date).
 
-   1996-12-19T16:39:57-08:00[Los Angeles,CA.,USA]
+   1996-12-19T16:39:57-08:00[America/Los_Angeles]
+
+   This informats that the expression's timezone is PST. Since the IANA
+   timezone name for both San Diego, CA and Prince George, BC, Canada
+   are "America/Los_Angeles" this information is clearly insufficient
+   given they are seperated by thousands of km and the difference between
+   their Sundown times is of a significant magnitude-- can be more than
+   an hour.
+
+   1996-12-19T16:39:57-08:00[:Los Angeles,CA.,USA]
 
    This represents the exact same instant as the previous example but
    additionally specifies the human name of the location associated
@@ -368,7 +386,7 @@ Examples
    became Kiev, Ukraine and then Kyiv, Ukraine). Town, state and country may
    also not uniquely specify a location. In the US we have, for example, in
    New York State two Woodbury towns (one in Nassau County and the other in
-   Orange County) 134 km apart.
+   Orange County) 134 km apart.  
    
    Best practice, it is suggested, is a a more "precise" expression such as
    lat/long 34.0522° N, 118.2437° W or one of the hashes that encode the
@@ -379,6 +397,9 @@ Examples
    to resolve either the time expression nor the location to determine the times
    for sunrise and sunset.
 
+   1996-12-19T16:39:57-08:00[9q5ctr186:Los Angles, CA. USA]
+   The above is exactly the same but includes an optional human readable
+   label to the geohash.
 
    1996-12-19T16:39:57-08:00[9q5ctr186][u-ca=hebrew]
 
