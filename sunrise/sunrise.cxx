@@ -365,7 +365,7 @@ double SolarHeight (int tu,     // universal times (0,1,2,.....,23)
     return result;
 }
 
-
+#ifdef EBUG
 
 ///////////EXTRA FUNCTIONS/////////////////////////////
 
@@ -471,3 +471,5 @@ int main(int argc, char* argv[])
 
     return 0;
 }
+
+#endif
