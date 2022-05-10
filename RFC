@@ -115,6 +115,7 @@ Informative
    * Start of the clock (0-24 hours):
      - Midnight
      - Sunrise - n minutes
+     - Zenith/Noon - n hours 
      - Convention when location is not specified
    * Type of calendar
      - Solar
@@ -263,7 +264,7 @@ Why encode using other calendars?
 Level 2 calendar attribute reserved names and keys for encoding (left side) 
 
    We propose to reserve the following keywords:
-     "mighnight" (0), "sunrise" ("r"), "sunset" ("s")
+     "mighnight" (0), "sunrise" ("r"), "sunset" ("s"), "zenith" (z)
 
    We propose to reserve the following keys
 
@@ -275,13 +276,12 @@ Level 2 calendar attribute reserved names and keys for encoding (left side)
   and instead of being forced to catalgue these seperately we can use these
   to modify their behavior.
 
-  For example the Talmudic Hebrew calendar starts counting hours at sunrise or daybreak
-  while the civil Hebrew calendar starts counting hours at midnight.
+  For example the Talmudic Hebrew calendar starts counting hours at 72 minutes before
+  sunrise or daybreak while the civil Hebrew calendar starts counting hours at midnight.
 
   Daybreak is normally held to be when the sun is 16.1° below the horizon, or a fixed 72
-  minutes or 90 minutes before sunrise . This is followed by 12 hours "day" and 12 hours
+  minutes or 90 minutes before sunrise. This is followed by 12 hours "day" and 12 hours
   "night".
-
 
   Simiarly the Hebrew calendar has also a number of different interpretations of when the
   next day starts. The Talmud states there is an uncertainty as to whether the day ends
@@ -293,6 +293,9 @@ Level 2 calendar attribute reserved names and keys for encoding (left side)
   In this light one reading could be:
      x-d=s+18
      x-c=r-72
+
+  Some variations take the observation of Zenith as the 6th hour-- defined also as the
+  6th hour of day-- and define midnight as the 6th hour of night (12 hours after Zenith).
 
 Syntax Extensions 
 
