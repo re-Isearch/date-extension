@@ -7,6 +7,8 @@ other calendars.
 The initial focus of this project has been to support Hebrew, Islamic and
 Chinese calendars.
 
+See also: <A HREF="https://github.com/re-Isearch"> re-Isearch repro</A>
+
 
 This repro has been supported by a fellowship from
 
